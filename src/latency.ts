@@ -1,11 +1,15 @@
-import { providers } from 'ethers'
+import { providers, utils } from 'ethers'
 import dotenv from 'dotenv'
 import { exit } from 'process'
 import { max, mean, median, round } from 'mathjs'
 dotenv.config()
 // ===== Uncomment this for mainnet =======
-const provider = new providers.JsonRpcProvider(process.env.rpcUrl)
+const rpcUrl = process.env.rpcUrl || ''
+const provider = new providers.JsonRpcProvider(rpcUrl)
+// const provider = providers.getDefaultProvider(rpcUrl, { chainId: 25, name: 'CRO' })
+
 let counter = 0
+const trial = process.env.trial || 0
 // eslint-disable-next-line prefer-const
 let latencies: number[] = []
 const asc = (arr: number[]) => arr.sort((a, b) => a - b)
@@ -22,15 +26,28 @@ const quantile = (arr: number[], q: number) => {
 }
 
 async function main() {
+  // const result = await utils.fetchJson(
+  //   'https://quvfhaze.china.bsc.node.web3rpc.com',
+  //   '{ "id": 56, "jsonrpc": "2.0", "method": "eth_chainId", "params": [ ] }'
+  // )
+  // console.log(result)
+
+  const network = await provider.getNetwork()
+  const startBlock = await provider.getBlockNumber()
+  console.log(`Started at block ${startBlock}`)
+  console.log(`Network: ${network.chainId}`)
+  console.log(`RPC: ${process.env.rpcUrl}`)
+  console.log(`Trial: ${trial}`)
+
   provider.on('block', async (blockNumber) => {
-    if (counter >= 10) {
+    if (counter >= trial) {
       const structDatas = [
         {
-          'Latency(mean)': mean(latencies),
-          'Latency(P25)': quantile(latencies, 0.25),
-          'Latency(P50)': median(latencies),
-          'Latency(P75)': quantile(latencies, 0.75),
-          'Latency(P99)': quantile(latencies, 0.99),
+          'Latency(mean)': round(mean(latencies), 2),
+          'Latency(P25)': round(quantile(latencies, 0.25), 2),
+          'Latency(P50)': round(median(latencies), 2),
+          'Latency(P75)': round(quantile(latencies, 0.75), 2),
+          'Latency(P99)': round(quantile(latencies, 0.99), 2),
           'Latency(max)': max(latencies)
         }
       ]
