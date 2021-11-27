@@ -34,12 +34,13 @@ async function main() {
 
   const network = await provider.getNetwork()
   const startBlock = await provider.getBlockNumber()
-  console.log(`Started at block ${startBlock}`)
-  console.log(`Network: ${network.chainId}`)
-  console.log(`RPC: ${process.env.rpcUrl}`)
-  console.log(`Trial: ${trial}`)
 
   provider.on('block', async (blockNumber) => {
+    console.clear()
+    console.log(`Started at block ${startBlock}`)
+    console.log(`Network: ${network.chainId}`)
+    console.log(`RPC: ${process.env.rpcUrl}`)
+    console.log(`Trial: ${trial}`)
     if (counter >= trial) {
       const structDatas = [
         {
@@ -57,7 +58,7 @@ async function main() {
     const receivedTime = round(Date.now() / 1000)
     const timeStamp = (await provider.getBlock(blockNumber)).timestamp
     const latency = receivedTime - timeStamp
-    console.log(`${counter}. Block Number:${blockNumber}, Latency: ${latency}s`)
+    console.log(`[${counter}/${trial}] Block Number:${blockNumber}, Latency: ${latency}s`)
     latencies.push(latency)
     counter++
   })
