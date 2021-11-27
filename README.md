@@ -9,7 +9,7 @@ Input the number of trials.
 
 ```bash
 npm install -D
-tsc -w -p .
+npx tsc -w -p .
 node build/latency.js
 ```
 
